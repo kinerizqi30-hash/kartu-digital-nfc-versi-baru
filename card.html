@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital NFC Business Card - 3D Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            background: #030508;
+            color: #f8fafc;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-image:
+                radial-gradient(circle at 50% 15%, rgba(20, 184, 166, 0.25) 0%, transparent 55%),
+                radial-gradient(circle at 80% 85%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 28px 28px, 28px 28px;
+            background-attachment: fixed;
+            perspective: 1200px;
+        }
+
+        .phone-frame {
+            background: linear-gradient(145deg, rgba(13, 19, 31, 0.88) 0%, rgba(7, 10, 18, 0.94) 100%);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            border: 1px solid rgba(45, 212, 191, 0.25);
+            box-shadow: 0 30px 70px -15px rgba(0, 0, 0, 0.95), 0 0 40px rgba(20, 184, 166, 0.12);
+            transform-style: preserve-3d;
+            transition: transform 0.18s ease-out;
+        }
+
+        .hologram-sheen {
+            background: radial-gradient(circle at var(--gx, 50%) var(--gy, 20%), rgba(255, 255, 255, 0.14) 0%, rgba(45, 212, 191, 0.05) 40%, transparent 70%);
+            mix-blend-mode: overlay;
+        }
+
+        .pop-avatar {
+            transform: translateZ(35px);
+            box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.85), 0 0 20px rgba(45, 212, 191, 0.3);
+        }
+
+        .pop-content {
+            transform: translateZ(20px);
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, rgba(19, 54, 58, 0.85) 0%, rgba(13, 36, 42, 0.9) 100%);
+            border: 1px solid rgba(45, 212, 191, 0.35);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateZ(15px);
+        }
+
+        .action-btn:hover {
+            background: linear-gradient(135deg, rgba(20, 184, 166, 0.35) 0%, rgba(15, 118, 110, 0.5) 100%);
+            border-color: rgba(45, 212, 191, 0.85);
+            transform: translateZ(22px) translateY(-2px);
+            box-shadow: 0 12px 25px -5px rgba(20, 184, 166, 0.3);
+        }
+
+        .comm-btn {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease;
+        }
+
+        .comm-btn:hover {
+            background: rgba(30, 41, 59, 0.95);
+            border-color: rgba(45, 212, 191, 0.6);
+            transform: translateY(-3px) scale(1.06);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-3 sm:p-5">
+
+    <!-- Loading State -->
+    <div id="loader" class="text-center">
+        <div class="w-12 h-12 border-4 border-teal-400 border-t-transparent rounded-full animate-spin mx-auto mb-4">
+        </div>
+        <p class="text-sm text-slate-400 font-medium tracking-wide">Memuat kartu 3D NFC...</p>
+    </div>
+
+    <!-- Main 3D Profile Card Container -->
+    <div id="profileContainer"
+        class="hidden max-w-[400px] w-full phone-frame rounded-[2.6rem] p-6 text-center relative overflow-hidden my-auto">
+
+        <!-- Efek Kilau Holografik -->
+        <div id="holoSheen" class="hologram-sheen absolute inset-0 pointer-events-none"></div>
+        <div
+            class="absolute -top-24 left-1/2 -translate-x-1/2 w-56 h-56 bg-teal-500/20 rounded-full blur-3xl pointer-events-none">
+        </div>
+
+        <!-- Header Status NFC -->
+        <div
+            class="flex items-center justify-between text-[10px] text-teal-400/80 font-bold uppercase tracking-widest mb-3 pop-content">
+            <span class="flex items-center gap-1.5"><span
+                    class="w-1.5 h-1.5 rounded-full bg-teal-400 animate-ping"></span> NFC Verified</span>
+            <button onclick="shareProfile()" class="text-slate-400 hover:text-white transition-colors cursor-pointer"
+                title="Bagikan Profil">
+                <i class="fa-solid fa-share-nodes text-xs"></i>
+            </button>
+        </div>
+
+        <!-- Avatar / Foto Profil Bulat 3D -->
+        <div
+            class="pop-avatar relative w-28 h-28 mx-auto mb-4 rounded-full overflow-hidden border-2 border-teal-400/70 bg-slate-900 flex items-center justify-center">
+            <img id="profileImage" src="" class="w-full h-full object-cover hidden">
+            <span id="initials" class="text-3xl font-extrabold text-teal-300">MR</span>
+        </div>
+
+        <!-- Nama, Jabatan & Bio -->
+        <div class="pop-content">
+            <h1 id="pNama" class="text-xl font-extrabold tracking-tight text-white uppercase">Memuat Nama...</h1>
+            <p id="pJabatan" class="text-xs text-slate-200 font-semibold mt-1">Jabatan</p>
+            <p id="pPerusahaan" class="text-[11px] text-teal-400 uppercase tracking-widest mt-0.5 font-bold">Perusahaan
+            </p>
+            <p id="pBio" class="hidden text-[11px] text-slate-400 mt-3 px-3 leading-relaxed"></p>
+        </div>
+
+        <!-- Baris Ikon Media Sosial (Dirender Otomatis oleh JS) -->
+        <div id="socialContainer" style="display: none;"
+            class="pop-content items-center justify-center gap-3.5 mt-5 flex-wrap"></div>
+
+        <!-- Garis Pemisah -->
+        <div class="flex items-center my-5">
+            <div class="flex-grow border-t border-slate-700/60"></div>
+            <div
+                class="w-2.5 h-2.5 rounded-full border border-teal-500/60 mx-3 bg-slate-900 flex items-center justify-center">
+                <div class="w-1 h-1 bg-teal-400 rounded-full"></div>
+            </div>
+            <div class="flex-grow border-t border-slate-700/60"></div>
+        </div>
+
+        <!-- Tombol Aksi Utama -->
+        <div class="space-y-3">
+            <a id="btnAction1" href="#" target="_blank"
+                class="action-btn w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl text-xs font-extrabold text-white tracking-wide shadow-lg">
+                <i class="fa-brands fa-whatsapp text-emerald-400 text-sm"></i> HUBUNGI VIA WHATSAPP
+            </a>
+            <a id="btnWebsite" href="#" target="_blank"
+                class="action-btn w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl text-xs font-extrabold text-white tracking-wide shadow-lg">
+                <i class="fa-solid fa-globe text-teal-400 text-sm"></i> KUNJUNGI WEBSITE
+            </a>
+            <button onclick="saveContact()"
+                class="action-btn w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl text-xs font-extrabold text-white tracking-wide shadow-lg cursor-pointer">
+                <i class="fa-solid fa-address-card text-teal-400 text-sm"></i> SIMPAN KONTAK (vCard)
+            </button>
+        </div>
+
+        <!-- Garis Pemisah Kedua -->
+        <div class="flex items-center my-5">
+            <div class="flex-grow border-t border-slate-700/60"></div>
+            <div
+                class="w-2.5 h-2.5 rounded-full border border-teal-500/60 mx-3 bg-slate-900 flex items-center justify-center">
+                <div class="w-1 h-1 bg-teal-400 rounded-full"></div>
+            </div>
+            <div class="flex-grow border-t border-slate-700/60"></div>
+        </div>
+
+        <!-- Bagian Komunikasi Cepat -->
+        <div class="pop-content">
+            <p class="text-[11px] font-semibold text-slate-400 mb-3 tracking-wide">Komunikasi Cepat</p>
+            <div class="flex items-center justify-center gap-3.5">
+                <a id="btnEmail" href="#"
+                    class="comm-btn w-12 h-12 rounded-2xl flex items-center justify-center text-slate-200 text-lg shadow-md"
+                    title="Kirim Email">
+                    <i class="fa-solid fa-envelope"></i>
+                </a>
+                <a id="btnWhatsapp" href="#" target="_blank"
+                    class="comm-btn w-12 h-12 rounded-2xl flex items-center justify-center text-emerald-400 text-xl shadow-md"
+                    title="WhatsApp">
+                    <i class="fa-brands fa-whatsapp"></i>
+                </a>
+                <a id="btnTelegram" href="#" target="_blank"
+                    class="comm-btn w-12 h-12 rounded-2xl flex items-center justify-center text-sky-400 text-lg shadow-md"
+                    title="Media Lain / LinkedIn">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <p class="text-[9px] text-slate-500 mt-7 tracking-widest uppercase">POWERED BY MITRA RATING 2026</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="errorBox" class="hidden text-center phone-frame p-8 rounded-[2.5rem] max-w-sm w-full">
+        <p class="text-2xl mb-2">⚠️</p>
+        <h2 class="text-base font-bold text-red-400">Kartu Tidak Ditemukan</h2>
+        <p class="text-xs text-slate-400 mt-1.5">Pastikan link NFC yang Anda akses sudah benar atau terdaftar di
+            database.</p>
+    </div>
+
+    <script>
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwtPVF6-E9qbs29iCMko_kHrgiH03FWUrAEsQUaW0q3rPwLGG8YqPa016WoIvyKtJulRw/exec";
+        let contactData = {};
+
+        // Efek 3D Tilt & Gyroscope
+        const card = document.getElementById('profileContainer');
+        const sheen = document.getElementById('holoSheen');
+
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const rotX = ((y - rect.height / 2) / (rect.height / 2)) * -8;
+            const rotY = ((x - rect.width / 2) / (rect.width / 2)) * 8;
+
+            card.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+            sheen.style.setProperty('--gx', `${(x / rect.width) * 100}%`);
+            sheen.style.setProperty('--gy', `${(y / rect.height) * 100}%`);
+        });
+
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = `rotateX(0deg) rotateY(0deg)`;
+        });
+
+        window.addEventListener('deviceorientation', (e) => {
+            if (!e.gamma || !e.beta) return;
+            const rotY = Math.max(-10, Math.min(10, e.gamma / 3));
+            const rotX = Math.max(-10, Math.min(10, (e.beta - 45) / 3));
+            card.style.transform = `rotateX(${-rotX}deg) rotateY(${rotY}deg)`;
+            sheen.style.setProperty('--gx', `${50 + rotY * 3}%`);
+            sheen.style.setProperty('--gy', `${50 + rotX * 3}%`);
+        });
+
+        // Helper untuk mencari key secara case-insensitive (kebal huruf besar/kecil)
+        function getField(obj, keys) {
+            if (!obj) return "";
+            const objKeys = Object.keys(obj);
+            for (const target of keys) {
+                const found = objKeys.find(k => k.toLowerCase().trim() === target.toLowerCase());
+                if (found && obj[found] !== null && obj[found] !== undefined && String(obj[found]).trim() !== "") {
+                    return String(obj[found]).trim();
+                }
+            }
+            return "";
+        }
+
+        async function fetchCardData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const cardId = urlParams.get('id');
+
+            if (!cardId) {
+                showError();
+                return;
+            }
+
+            try {
+                const response = await fetch(`${WEB_APP_URL}?id=${cardId}`);
+                const res = await response.json();
+                console.log("Data dari Cloud:", res); // Cek di console jika perlu
+
+                if (res.status === "success") {
+                    contactData = res.data;
+                    renderProfile(contactData);
+                } else {
+                    showError();
+                }
+            } catch (err) {
+                showError();
+            }
+        }
+
+        function renderProfile(data) {
+            document.getElementById('loader').classList.add('hidden');
+            document.getElementById('profileContainer').classList.remove('hidden');
+
+            const nama = getField(data, ['nama', 'name']) || "Tanpa Nama";
+            const jabatan = getField(data, ['jabatan', 'title', 'posisi']) || "Sales & Marketing";
+            const perusahaan = getField(data, ['perusahaan', 'company', 'brand']) || "Mitra Rating.id";
+            const bio = getField(data, ['bio', 'tagline', 'deskripsi']);
+            const foto = getField(data, ['foto', 'photo', 'gambar']);
+            const telepon = getField(data, ['telepon', 'whatsapp', 'wa', 'phone', 'no_wa']);
+            const email = getField(data, ['email', 'mail']);
+            const website = getField(data, ['website', 'web', 'url']);
+
+            document.getElementById('pNama').textContent = nama;
+            document.getElementById('pJabatan').textContent = jabatan;
+            document.getElementById('pPerusahaan').textContent = perusahaan;
+
+            if (bio) {
+                const bioEl = document.getElementById('pBio');
+                bioEl.textContent = bio;
+                bioEl.classList.remove('hidden');
+            }
+
+            if (foto) {
+                const pImg = document.getElementById('profileImage');
+                pImg.src = foto;
+                pImg.classList.remove('hidden');
+                document.getElementById('initials').classList.add('hidden');
+            } else {
+                const initials = nama.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                document.getElementById('initials').textContent = initials;
+            }
+
+            const cleanPhone = telepon.replace(/\D/g, '');
+            document.getElementById('btnAction1').href = `https://wa.me/${cleanPhone}?text=Halo%20${encodeURIComponent(nama)},%20saya%20tertarik%20dengan%20penawaran%20Anda.`;
+
+            const webUrl = website ? (website.startsWith('http') ? website : `https://${website}`) : '#';
+            document.getElementById('btnWebsite').href = webUrl;
+
+            const linkedinVal = getField(data, ['linkedin', 'li']);
+            document.getElementById('btnEmail').href = `mailto:${email}`;
+            document.getElementById('btnWhatsapp').href = `https://wa.me/${cleanPhone}`;
+            document.getElementById('btnTelegram').href = linkedinVal ? (linkedinVal.startsWith('http') ? linkedinVal : `https://${linkedinVal}`) : `https://t.me/${cleanPhone}`;
+
+            // --- RENDER IKON SOSMED (Hanya muncul jika ada datanya) ---
+            const igVal = getField(data, ['instagram', 'ig']);
+            const ttVal = getField(data, ['tiktok', 'tt']);
+            const twVal = getField(data, ['twitter', 'x', 'tw']);
+            const fbVal = getField(data, ['facebook', 'fb']);
+            const ytVal = getField(data, ['youtube', 'yt']);
+
+            const socialList = [];
+
+            if (igVal) {
+                const url = igVal.startsWith('http') ? igVal : `https://instagram.com/${igVal.replace(/^@/, '')}`;
+                socialList.push({ url, icon: 'fa-brands fa-instagram', color: 'hover:text-pink-400 hover:border-pink-500/40', title: 'Instagram' });
+            }
+            if (ttVal) {
+                const url = ttVal.startsWith('http') ? ttVal : `https://tiktok.com/@${ttVal.replace(/^@/, '')}`;
+                socialList.push({ url, icon: 'fa-brands fa-tiktok', color: 'hover:text-white hover:border-slate-400', title: 'TikTok' });
+            }
+            if (linkedinVal) {
+                const url = linkedinVal.startsWith('http') ? linkedinVal : `https://${linkedinVal}`;
+                socialList.push({ url, icon: 'fa-brands fa-linkedin-in', color: 'hover:text-blue-400 hover:border-blue-400/40', title: 'LinkedIn' });
+            }
+            if (twVal) {
+                const url = twVal.startsWith('http') ? twVal : `https://x.com/${twVal.replace(/^@/, '')}`;
+                socialList.push({ url, icon: 'fa-brands fa-x-twitter', color: 'hover:text-sky-400 hover:border-sky-500/40', title: 'X / Twitter' });
+            }
+            if (fbVal) {
+                const url = fbVal.startsWith('http') ? fbVal : `https://facebook.com/${fbVal}`;
+                socialList.push({ url, icon: 'fa-brands fa-facebook-f', color: 'hover:text-blue-500 hover:border-blue-500/40', title: 'Facebook' });
+            }
+            if (ytVal) {
+                const url = ytVal.startsWith('http') ? ytVal : `https://youtube.com/${ytVal}`;
+                socialList.push({ url, icon: 'fa-brands fa-youtube', color: 'hover:text-red-500 hover:border-red-500/40', title: 'YouTube' });
+            }
+
+            const socialContainer = document.getElementById('socialContainer');
+            if (socialList.length > 0) {
+                socialContainer.innerHTML = socialList.map(item => `
+                    <a href="${item.url}" target="_blank" title="${item.title}"
+                       class="w-10 h-10 rounded-2xl bg-slate-900/90 border border-slate-700/80 flex items-center justify-center text-slate-200 ${item.color} text-base transition-all shadow-md hover:-translate-y-1">
+                        <i class="${item.icon}"></i>
+                    </a>
+                `).join('');
+                socialContainer.style.display = 'flex';
+            }
+        }
+
+        function showError() {
+            document.getElementById('loader').classList.add('hidden');
+            document.getElementById('errorBox').classList.remove('hidden');
+        }
+
+        function shareProfile() {
+            if (navigator.share) {
+                navigator.share({
+                    title: `${getField(contactData, ['nama'])} - Digital NFC Card`,
+                    url: window.location.href
+                });
+            } else {
+                navigator.clipboard.writeText(window.location.href);
+                alert("Tautan kartu digital disalin ke clipboard!");
+            }
+        }
+
+        function saveContact() {
+            const vcard = `BEGIN:VCARD
+VERSION:3.0
+FN:${getField(contactData, ['nama'])}
+TITLE:${getField(contactData, ['jabatan'])}
+ORG:${getField(contactData, ['perusahaan'])}
+TEL;TYPE=CELL:${getField(contactData, ['telepon'])}
+EMAIL:${getField(contactData, ['email'])}
+URL:${getField(contactData, ['website'])}
+NOTE:${getField(contactData, ['bio'])}
+END:VCARD`;
+
+            const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${(getField(contactData, ['nama']) || 'Contact').replace(/\s+/g, '_')}_Contact.vcf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        fetchCardData();
+    </script>
+</body>
+
+</html>
