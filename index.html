@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart NFC Card Generator - 3D Elite Studio</title>
+    <title>Smart NFC Card Generator - Elite Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
@@ -26,24 +26,34 @@
         }
     </script>
     <style>
+        :root {
+            --accent-primary: #10b981;
+            --accent-secondary: #2dd4bf;
+            --accent-glow: rgba(16, 185, 129, 0.18);
+            --card-bg-start: rgba(13, 25, 34, 0.96);
+            --card-bg-end: rgba(6, 10, 18, 0.99);
+            --card-border: rgba(45, 212, 191, 0.35);
+        }
+
         body {
             background: #030508;
             color: #f1f5f9;
             background-image:
-                radial-gradient(circle at 15% 15%, rgba(16, 185, 129, 0.14) 0px, transparent 45%),
-                radial-gradient(circle at 85% 85%, rgba(99, 102, 241, 0.14) 0px, transparent 45%),
+                radial-gradient(circle at 15% 15%, var(--accent-glow) 0px, transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(99, 102, 241, 0.12) 0px, transparent 45%),
                 linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
             background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
             background-attachment: fixed;
+            transition: background-image 0.4s ease;
         }
 
         .glass-panel {
-            background: rgba(11, 15, 23, 0.78);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
+            background: rgba(11, 15, 23, 0.82);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
         }
 
         .glass-input {
@@ -54,53 +64,29 @@
 
         .glass-input:focus {
             background: rgba(15, 23, 42, 0.95);
-            border-color: rgba(16, 185, 129, 0.7);
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px var(--accent-glow);
         }
 
-        /* 3D Card Perspective & Holographic Effects */
-        .scene-3d {
-            perspective: 1100px;
+        .preview-card {
+            background: linear-gradient(145deg, var(--card-bg-start) 0%, var(--card-bg-end) 100%);
+            border: 1px solid var(--card-border);
+            box-shadow: 0 20px 45px -12px rgba(0, 0, 0, 0.9), 0 0 35px var(--accent-glow);
+            transition: all 0.35s ease;
         }
 
-        .card-3d {
-            transform-style: preserve-3d;
-            transition: transform 0.15s ease-out, box-shadow 0.3s ease;
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(6, 10, 18, 0.98) 100%);
-            border: 1px solid rgba(45, 212, 191, 0.25);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9), 0 0 30px rgba(16, 185, 129, 0.1);
+        .theme-btn.active {
+            transform: scale(1.12);
+            box-shadow: 0 0 0 2px #030508, 0 0 0 4px var(--accent-primary);
         }
 
-        .card-3d:hover {
-            box-shadow: 0 35px 65px -15px rgba(0, 0, 0, 0.95), 0 0 40px rgba(16, 185, 129, 0.22);
-        }
-
-        .card-glare {
-            background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.16) 0%, rgba(45, 212, 191, 0.06) 35%, transparent 70%);
-            mix-blend-mode: overlay;
-        }
-
-        .layer-z-1 {
-            transform: translateZ(20px);
-        }
-
-        .layer-z-2 {
-            transform: translateZ(35px);
-        }
-
-        .layer-z-3 {
-            transform: translateZ(50px);
-        }
-
-        /* Cropper Custom Dark Theme */
         .cropper-view-box,
         .cropper-face {
             border-radius: 50%;
         }
 
         .cropper-view-box {
-            outline: 2px solid #10b981;
-            outline-color: rgba(16, 185, 129, 0.85);
+            outline: 2px solid var(--accent-primary);
         }
     </style>
 </head>
@@ -111,44 +97,62 @@
 
         <!-- Form Utama (Kolom Kiri / 7 Grid) -->
         <div class="lg:col-span-7 glass-panel p-6 md:p-8 rounded-[2.5rem] relative overflow-hidden">
-            <div
-                class="absolute -top-32 -right-32 w-72 h-72 bg-emerald-500/15 rounded-full blur-[100px] pointer-events-none">
-            </div>
-
             <div class="text-center mb-6 relative z-10">
-                <div
-                    class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 text-[11px] font-bold tracking-wider uppercase mb-3">
-                    <i class="fa-solid fa-cube animate-bounce"></i> NFC 3D Smart Studio v4.0
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] font-bold tracking-wider uppercase mb-3 border"
+                    style="background: var(--accent-glow); color: var(--accent-secondary); border-color: var(--card-border);">
+                    <i class="fa-solid fa-crown"></i> NFC Elite Studio
                 </div>
                 <h1 class="text-2xl font-extrabold tracking-tight text-white">Buat Kartu Digital & NFC</h1>
-                <p class="text-xs text-slate-400 mt-1">Kustomisasi profil, pangkas foto presisi & pratinjau kartu 3D
-                    real-time.</p>
+                <p class="text-xs text-slate-400 mt-1">Pilih tema warna elegan, atur profil & pratinjau kartu secara
+                    langsung.</p>
             </div>
 
             <form id="nfcForm" class="space-y-4 relative z-10">
+                <!-- Pemilih Tema Warna Elegan -->
+                <div
+                    class="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div>
+                        <p class="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                            <i class="fa-solid fa-palette" style="color: var(--accent-primary);"></i> Tema Warna Kartu
+                        </p>
+                        <p id="themeLabel" class="text-[11px] text-slate-400">Emerald Luxury (Hijau Zamrud)</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button type="button" onclick="setTheme('emerald', this)" title="Emerald Luxury"
+                            class="theme-btn active w-7 h-7 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-300 cursor-pointer transition-all"></button>
+                        <button type="button" onclick="setTheme('gold', this)" title="Royal Obsidian Gold"
+                            class="theme-btn w-7 h-7 rounded-full bg-gradient-to-tr from-amber-600 to-yellow-300 cursor-pointer transition-all"></button>
+                        <button type="button" onclick="setTheme('sapphire', this)" title="Midnight Sapphire"
+                            class="theme-btn w-7 h-7 rounded-full bg-gradient-to-tr from-blue-600 to-cyan-300 cursor-pointer transition-all"></button>
+                        <button type="button" onclick="setTheme('rosegold', this)" title="Velvet Rose Gold"
+                            class="theme-btn w-7 h-7 rounded-full bg-gradient-to-tr from-rose-600 to-amber-200 cursor-pointer transition-all"></button>
+                    </div>
+                </div>
+
                 <!-- Upload & Edit Foto Profil -->
-                <div class="flex flex-col items-center justify-center pb-2">
+                <div class="flex flex-col items-center justify-center pb-1">
                     <label class="block text-xs font-semibold text-slate-300 mb-2">Foto Profil / Logo Brand</label>
                     <div class="flex items-center gap-3">
                         <div class="relative group cursor-pointer"
                             onclick="document.getElementById('fotoFile').click()">
                             <div
-                                class="w-24 h-24 rounded-full overflow-hidden border-2 border-dashed border-slate-600 group-hover:border-emerald-400 bg-slate-900/90 flex items-center justify-center transition-all shadow-lg">
+                                class="w-24 h-24 rounded-full overflow-hidden border-2 border-dashed border-slate-600 bg-slate-900/90 flex items-center justify-center transition-all shadow-lg">
                                 <img id="previewImg" src="" class="w-full h-full object-cover hidden">
                                 <div id="placeholderImg" class="text-center p-2">
-                                    <i class="fa-solid fa-camera text-emerald-400 text-xl mb-1"></i>
+                                    <i class="fa-solid fa-camera text-xl mb-1"
+                                        style="color: var(--accent-primary);"></i>
                                     <p class="text-[10px] text-slate-400 font-medium">Unggah Foto</p>
                                 </div>
                             </div>
-                            <div
-                                class="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center text-xs shadow-md border-2 border-slate-900">
+                            <div class="absolute bottom-0 right-0 w-7 h-7 rounded-full text-slate-950 flex items-center justify-center text-xs shadow-md border-2 border-slate-900"
+                                style="background: var(--accent-primary);">
                                 <i class="fa-solid fa-plus"></i>
                             </div>
                         </div>
 
-                        <!-- Tombol Edit Ulang Foto (Muncul jika sudah upload) -->
                         <button type="button" id="reCropBtn" onclick="openCropModalWithExisting()"
-                            class="hidden px-3 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-xs text-emerald-400 font-semibold flex items-center gap-1.5 transition-all cursor-pointer">
+                            class="hidden px-3 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
+                            style="color: var(--accent-secondary);">
                             <i class="fa-solid fa-crop-simple"></i> Pangkas Ulang
                         </button>
                     </div>
@@ -229,7 +233,8 @@
                 <!-- Sosial Media -->
                 <div class="p-3.5 rounded-2xl bg-slate-950/50 border border-slate-800/80 space-y-2.5">
                     <p class="text-[11px] font-bold text-slate-300 flex items-center gap-2">
-                        <i class="fa-solid fa-share-nodes text-emerald-400"></i> Tautan Media Sosial
+                        <i class="fa-solid fa-share-nodes" style="color: var(--accent-primary);"></i> Tautan Media
+                        Sosial
                     </p>
                     <div class="grid grid-cols-2 gap-2.5">
                         <div class="relative">
@@ -271,66 +276,61 @@
                 </div>
 
                 <button type="submit" id="submitBtn"
-                    class="w-full bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-500 hover:brightness-110 text-slate-950 font-extrabold py-3.5 rounded-xl transition-all shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 cursor-pointer text-xs tracking-wide">
+                    class="w-full hover:brightness-110 text-slate-950 font-extrabold py-3.5 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer text-xs tracking-wide"
+                    style="background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));">
                     <i class="fa-solid fa-cloud-arrow-up"></i> GENERATE & SIMPAN KE CLOUD
                 </button>
             </form>
         </div>
 
-        <!-- Kolom Kanan: 3D Interactive Live Preview & Hasil NFC (5 Grid) -->
+        <!-- Kolom Kanan: Live Preview & Hasil NFC (5 Grid) -->
         <div class="lg:col-span-5 space-y-5">
-            <!-- 3D Live Preview Card -->
+            <!-- Live Preview Card -->
             <div class="glass-panel p-5 rounded-[2.5rem] relative">
                 <div class="flex items-center justify-between mb-3 px-2">
-                    <div
-                        class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-1.5">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span> 3D Interactive Card
+                    <div class="text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5"
+                        style="color: var(--accent-secondary);">
+                        <span class="w-2 h-2 rounded-full animate-ping"
+                            style="background: var(--accent-primary);"></span> Live Preview Card
                     </div>
-                    <span
-                        class="text-[10px] text-slate-400 bg-slate-900/90 px-2.5 py-1 rounded-full border border-slate-800">
-                        <i class="fa-solid fa-hand-pointer mr-1 text-emerald-400"></i> Gerakkan Kursor
-                    </span>
                 </div>
 
-                <!-- Scene 3D -->
-                <div class="scene-3d py-2">
-                    <div id="tiltCard"
-                        class="card-3d rounded-[2rem] p-6 text-center relative overflow-hidden cursor-grab active:cursor-grabbing select-none">
-                        <!-- Lapisan Cahaya Holografik -->
-                        <div id="cardGlare"
-                            class="card-glare absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-300">
-                        </div>
+                <div class="py-2">
+                    <div class="preview-card rounded-[2rem] p-6 text-center relative overflow-hidden select-none">
+                        <!-- Aksen Cahaya Halus di Atas Kartu -->
+                        <div class="absolute -top-20 left-1/2 -translate-x-1/2 w-52 h-52 rounded-full blur-3xl pointer-events-none"
+                            style="background: var(--accent-glow);"></div>
 
                         <!-- Chip NFC & Sinyal -->
-                        <div class="flex justify-between items-center mb-4 layer-z-1">
+                        <div class="flex justify-between items-center mb-4 relative z-10">
                             <div
                                 class="w-9 h-7 rounded-md bg-gradient-to-tr from-amber-500/30 to-yellow-200/30 border border-amber-400/40 flex items-center justify-center">
                                 <div class="w-5 h-3.5 border border-amber-300/40 rounded-xs"></div>
                             </div>
-                            <i class="fa-solid fa-wifi rotate-90 text-emerald-400/80 text-base"></i>
+                            <i class="fa-solid fa-wifi rotate-90 text-base" style="color: var(--accent-secondary);"></i>
                         </div>
 
-                        <!-- Avatar 3D Pop-out -->
-                        <div
-                            class="layer-z-3 w-24 h-24 rounded-full mx-auto overflow-hidden bg-slate-900 border-2 border-emerald-400/60 mb-3.5 shadow-[0_15px_30px_rgba(0,0,0,0.8)] flex items-center justify-center relative">
+                        <!-- Avatar -->
+                        <div class="w-24 h-24 rounded-full mx-auto overflow-hidden bg-slate-900 border-2 mb-3.5 shadow-lg flex items-center justify-center relative z-10"
+                            style="border-color: var(--accent-primary);">
                             <img id="previewCardImg" src="" class="w-full h-full object-cover hidden">
                             <i id="previewCardIcon" class="fa-solid fa-user text-slate-600 text-2xl"></i>
                         </div>
 
-                        <!-- Info 3D Layer -->
-                        <div class="layer-z-2">
+                        <!-- Info -->
+                        <div class="relative z-10">
                             <h3 id="previewCardName" class="text-base font-extrabold text-white tracking-tight">Nama
                                 Anda</h3>
-                            <p id="previewCardTitle" class="text-xs text-emerald-400 font-semibold mt-0.5">Jabatan •
-                                Perusahaan</p>
+                            <p id="previewCardTitle" class="text-xs font-semibold mt-0.5"
+                                style="color: var(--accent-secondary);">Jabatan • Perusahaan</p>
                             <p id="previewCardBio"
-                                class="text-[11px] text-slate-400 mt-2.5 line-clamp-2 px-2 leading-relaxed">Tagline atau
-                                bio singkat akan muncul di sini secara otomatis...</p>
+                                class="text-[11px] text-slate-300/80 mt-2.5 line-clamp-2 px-2 leading-relaxed">Tagline
+                                atau bio singkat akan muncul di sini secara otomatis...</p>
                         </div>
 
                         <!-- Mini Preview Sosmed -->
                         <div id="previewSocialDots"
-                            class="layer-z-1 flex justify-center gap-3 mt-4 pt-3 border-t border-slate-800/80 text-slate-400 text-xs">
+                            class="relative z-10 flex justify-center gap-3.5 mt-4 pt-3 border-t border-white/10 text-slate-300 text-xs">
                             <i id="dotIg" class="fa-brands fa-instagram opacity-25 transition-opacity"></i>
                             <i id="dotLi" class="fa-brands fa-linkedin-in opacity-25 transition-opacity"></i>
                             <i id="dotTt" class="fa-brands fa-tiktok opacity-25 transition-opacity"></i>
@@ -340,44 +340,47 @@
                 </div>
             </div>
 
-            <!-- Hasil Link NFC & QR Code (Hidden Awal) -->
-            <div id="resultBox"
-                class="hidden glass-panel p-6 rounded-[2.5rem] border-emerald-500/40 text-center relative shadow-xl">
-                <div
-                    class="w-9 h-9 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-2 text-sm">
+            <!-- Hasil Link NFC & QR Code -->
+            <div id="resultBox" class="hidden glass-panel p-6 rounded-[2.5rem] text-center relative shadow-xl"
+                style="border-color: var(--card-border);">
+                <div class="w-9 h-9 rounded-full flex items-center justify-center mx-auto mb-2 text-sm"
+                    style="background: var(--accent-glow); color: var(--accent-secondary);">
                     <i class="fa-solid fa-check"></i>
                 </div>
-                <p class="text-xs text-emerald-400 font-extrabold tracking-wide uppercase mb-1">KARTU NFC BERHASIL
-                    DIBUAT!</p>
+                <p class="text-xs font-extrabold tracking-wide uppercase mb-1" style="color: var(--accent-secondary);">
+                    KARTU NFC BERHASIL DIBUAT!</p>
                 <p class="text-[11px] text-slate-300 mb-3">Tulis URL ke chip NFC atau scan QR di bawah ini:</p>
 
-                <!-- Kotak QR Code -->
                 <div id="qrcode" class="bg-white p-3 rounded-2xl inline-block mb-3 shadow-lg"></div>
 
                 <div class="flex items-center gap-2 bg-slate-950 p-2 rounded-xl border border-slate-800 mb-3">
                     <input type="text" id="nfcUrl" readonly
-                        class="w-full bg-transparent text-[11px] text-emerald-300 px-1.5 outline-none select-all font-mono">
+                        class="w-full bg-transparent text-[11px] px-1.5 outline-none select-all font-mono"
+                        style="color: var(--accent-secondary);">
                     <button onclick="copyLink()"
-                        class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[11px] font-bold px-3.5 py-1.5 rounded-lg transition-all shrink-0 cursor-pointer">
+                        class="text-slate-950 text-[11px] font-bold px-3.5 py-1.5 rounded-lg transition-all shrink-0 cursor-pointer"
+                        style="background: var(--accent-primary);">
                         <i class="fa-regular fa-copy"></i> Salin
                     </button>
                 </div>
 
                 <a id="previewLink" href="#" target="_blank"
-                    class="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors">
-                    Buka Halaman Profil 3D <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                    class="inline-flex items-center gap-1.5 text-xs font-bold hover:underline transition-colors"
+                    style="color: var(--accent-secondary);">
+                    Buka Halaman Profil <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
                 </a>
             </div>
         </div>
     </div>
 
-    <!-- MODAL EDITOR & PANGKAS FOTO (CROPPER STUDIO) -->
+    <!-- MODAL EDITOR & PANGKAS FOTO -->
     <div id="cropModal"
         class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
         <div class="glass-panel max-w-md w-full rounded-3xl p-5 border border-slate-700 shadow-2xl">
             <div class="flex items-center justify-between mb-3">
                 <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-crop-simple text-emerald-400"></i> Sesuaikan & Pangkas Foto
+                    <i class="fa-solid fa-crop-simple" style="color: var(--accent-primary);"></i> Sesuaikan & Pangkas
+                    Foto
                 </h3>
                 <button type="button" onclick="closeCropModal()"
                     class="text-slate-400 hover:text-white text-base cursor-pointer">
@@ -385,13 +388,11 @@
                 </button>
             </div>
 
-            <!-- Area Kanvas Crop -->
             <div
                 class="w-full h-64 bg-slate-950 rounded-2xl overflow-hidden border border-slate-800 mb-4 flex items-center justify-center">
                 <img id="cropperImage" src="" class="max-w-full block">
             </div>
 
-            <!-- Kontrol Zoom & Putar -->
             <div class="flex items-center justify-center gap-2 mb-4">
                 <button type="button" onclick="cropper.zoom(0.1)"
                     class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 cursor-pointer"
@@ -426,7 +427,8 @@
                     Batal
                 </button>
                 <button type="button" onclick="applyCrop()"
-                    class="w-1/2 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-xs font-bold text-slate-950 cursor-pointer shadow-lg shadow-emerald-500/20">
+                    class="w-1/2 py-2.5 rounded-xl text-xs font-bold text-slate-950 cursor-pointer shadow-lg"
+                    style="background: var(--accent-primary);">
                     <i class="fa-solid fa-check mr-1"></i> Terapkan Foto
                 </button>
             </div>
@@ -438,34 +440,65 @@
         let compressedPhotoBase64 = "";
         let rawOriginalImage = "";
         let cropper = null;
+        let currentTheme = "emerald";
 
-        // --- 1. EFEK 3D TILT & GLARE INTERAKTIF ---
-        const tiltCard = document.getElementById('tiltCard');
-        const cardGlare = document.getElementById('cardGlare');
+        const THEMES = {
+            emerald: {
+                label: "Emerald Luxury (Hijau Zamrud)",
+                primary: "#10b981",
+                secondary: "#2dd4bf",
+                glow: "rgba(16, 185, 129, 0.22)",
+                bgStart: "rgba(13, 28, 36, 0.96)",
+                bgEnd: "rgba(6, 11, 18, 0.99)",
+                border: "rgba(45, 212, 191, 0.35)"
+            },
+            gold: {
+                label: "Royal Obsidian Gold (Hitam & Emas)",
+                primary: "#f59e0b",
+                secondary: "#fcd34d",
+                glow: "rgba(245, 158, 11, 0.22)",
+                bgStart: "rgba(32, 24, 14, 0.96)",
+                bgEnd: "rgba(10, 8, 6, 0.99)",
+                border: "rgba(251, 191, 36, 0.4)"
+            },
+            sapphire: {
+                label: "Midnight Sapphire (Biru Safir)",
+                primary: "#3b82f6",
+                secondary: "#38bdf8",
+                glow: "rgba(59, 130, 246, 0.24)",
+                bgStart: "rgba(14, 24, 46, 0.96)",
+                bgEnd: "rgba(6, 10, 22, 0.99)",
+                border: "rgba(56, 189, 248, 0.38)"
+            },
+            rosegold: {
+                label: "Velvet Rose Gold (Emas Mawar)",
+                primary: "#f43f5e",
+                secondary: "#fda4af",
+                glow: "rgba(244, 63, 94, 0.22)",
+                bgStart: "rgba(36, 16, 26, 0.96)",
+                bgEnd: "rgba(12, 6, 10, 0.99)",
+                border: "rgba(251, 113, 133, 0.38)"
+            }
+        };
 
-        tiltCard.addEventListener('mousemove', (e) => {
-            const rect = tiltCard.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+        function setTheme(themeKey, btnElement) {
+            currentTheme = themeKey;
+            const t = THEMES[themeKey];
+            const root = document.documentElement;
 
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
+            root.style.setProperty('--accent-primary', t.primary);
+            root.style.setProperty('--accent-secondary', t.secondary);
+            root.style.setProperty('--accent-glow', t.glow);
+            root.style.setProperty('--card-bg-start', t.bgStart);
+            root.style.setProperty('--card-bg-end', t.bgEnd);
+            root.style.setProperty('--card-border', t.border);
 
-            const rotateX = ((y - centerY) / centerY) * -14; // Maksimal kemiringan 14 derajat
-            const rotateY = ((x - centerX) / centerX) * 14;
+            document.getElementById('themeLabel').innerText = t.label;
 
-            tiltCard.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-            cardGlare.style.opacity = '1';
-            cardGlare.style.setProperty('--mouse-x', `${(x / rect.width) * 100}%`);
-            cardGlare.style.setProperty('--mouse-y', `${(y / rect.height) * 100}%`);
-        });
+            document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+            if (btnElement) btnElement.classList.add('active');
+        }
 
-        tiltCard.addEventListener('mouseleave', () => {
-            tiltCard.style.transform = `rotateX(0deg) rotateY(0deg)`;
-            cardGlare.style.opacity = '0';
-        });
-
-        // --- 2. LIVE PREVIEW UPDATE ---
         function updateLivePreview() {
             const nama = document.getElementById('nama').value || "Nama Anda";
             const jabatan = document.getElementById('jabatan').value || "Jabatan";
@@ -476,14 +509,12 @@
             document.getElementById('previewCardTitle').innerText = `${jabatan} • ${perusahaan}`;
             document.getElementById('previewCardBio').innerText = bio;
 
-            // Update indikator ikon sosmed di kartu 3D
             document.getElementById('dotIg').style.opacity = document.getElementById('instagram').value ? '1' : '0.25';
             document.getElementById('dotLi').style.opacity = document.getElementById('linkedin').value ? '1' : '0.25';
             document.getElementById('dotTt').style.opacity = document.getElementById('tiktok').value ? '1' : '0.25';
             document.getElementById('dotTw').style.opacity = document.getElementById('twitter').value ? '1' : '0.25';
         }
 
-        // --- 3. HANDLER UPLOAD & CROP FOTO LANGSUNG ---
         function handleImageSelect(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -494,7 +525,7 @@
                 openCropModal(rawOriginalImage);
             };
             reader.readAsDataURL(file);
-            event.target.value = ""; // Reset input agar bisa pilih file sama
+            event.target.value = "";
         }
 
         function openCropModalWithExisting() {
@@ -536,7 +567,6 @@
         function applyCrop() {
             if (!cropper) return;
 
-            // Hasilkan gambar persegi 320x320 terkompresi
             const canvas = cropper.getCroppedCanvas({
                 width: 320,
                 height: 320,
@@ -546,7 +576,6 @@
 
             compressedPhotoBase64 = canvas.toDataURL('image/jpeg', 0.8);
 
-            // Update Form Preview & 3D Card Preview
             document.getElementById('previewImg').src = compressedPhotoBase64;
             document.getElementById('previewImg').classList.remove('hidden');
             document.getElementById('placeholderImg').classList.add('hidden');
@@ -559,7 +588,6 @@
             closeCropModal();
         }
 
-        // --- 4. SUBMIT KE CLOUD ---
         document.getElementById('nfcForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
@@ -578,6 +606,7 @@
                 tiktok: document.getElementById('tiktok').value,
                 twitter: document.getElementById('twitter').value,
                 bio: document.getElementById('bio').value,
+                tema: currentTheme,
                 foto: compressedPhotoBase64
             };
 
@@ -591,12 +620,11 @@
 
                 if (res.status === "success") {
                     const currentDomain = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-                    const profileUrl = currentDomain + "card.html?id=" + res.cardId;
+                    const profileUrl = `${currentDomain}card.html?id=${res.cardId}&theme=${currentTheme}`;
 
                     document.getElementById('nfcUrl').value = profileUrl;
                     document.getElementById('previewLink').href = profileUrl;
 
-                    // Render QR Code Otomatis (Bug Fixed)
                     const qrContainer = document.getElementById("qrcode");
                     qrContainer.innerHTML = "";
                     new QRCode(qrContainer, {
